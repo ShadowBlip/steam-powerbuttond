@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# created based on implementation from HandyGCCS https://github.com/ShadowBlip/HandyGCCS/blob/10bf0da2bbe06b4e6c608e157f26628b6d848042/src/handycon/utilities.py#L351
+
 import evdev
 import threading
 import os
@@ -61,6 +63,7 @@ def get_user():
         sleep(1)
 
 def run_steam_command(command):
+    global home_path
     steam_path = home_path + '/.steam/root/ubuntu12_32/steam'
     try:
         result = subprocess.run(["su", user, "-c", f"{steam_path} -ifrunning {command}" ])
