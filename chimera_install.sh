@@ -1,8 +1,12 @@
 #!/bin/bash
 
-mkdir $HOME/.steam_powerbuttond
+chmod +x ./steam-powerbuttond
+mkdir -p $HOME/.local/bin
 
-cp ./steam-powerbuttond $HOME/.steam_powerbuttond
+cp ./steam-powerbuttond $HOME/.local/bin
+
+sudo systemctl disable steam-powerbuttond-chimeraos
+sudo systemctl stop steam-powerbuttond-chimeraos
 
 sudo cp ./steam-powerbuttond-chimeraos.service /etc/systemd/system/
 
