@@ -1,0 +1,9 @@
+[Unit]
+Description=Steam Power Button Service for ChimeraOS
+After=graphical-session.target
+
+[Service]
+ExecStart=/home/gamer/.steam_powerbuttond/steam-powerbuttond
+
+[Install]
+WantedBy=multi-user.target
