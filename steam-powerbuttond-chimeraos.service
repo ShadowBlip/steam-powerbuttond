@@ -1,10 +1,10 @@
 [Unit]
 Description=Steam Power Button Service for ChimeraOS
-Restart=always
-RestartSec=5
 After=graphical-session.target
 
 [Service]
+Restart=always
+RestartSec=5
 ExecStart=/home/gamer/.local/bin/steam-powerbuttond
 
 [Install]
