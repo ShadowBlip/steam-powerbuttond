@@ -3,6 +3,8 @@
 chmod +x ./steam-powerbuttond
 mkdir -p $HOME/.local/bin
 
+rm $HOME/.local/bin/steam-powerbuttond
+
 cp ./steam-powerbuttond $HOME/.local/bin
 
 sudo systemctl disable steam-powerbuttond-chimeraos
