@@ -1,5 +1,7 @@
 [Unit]
 Description=Steam Power Button Service for ChimeraOS
+Restart=always
+RestartSec=5
 After=graphical-session.target
 
 [Service]
