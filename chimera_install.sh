@@ -7,13 +7,11 @@ rm $HOME/.local/bin/steam-powerbuttond
 
 cp ./steam-powerbuttond $HOME/.local/bin
 
-sudo systemctl disable steam-powerbuttond-chimeraos
-sudo systemctl stop steam-powerbuttond-chimeraos
+sudo systemctl disable --now steam-powerbuttond-chimeraos
 
 sudo cp ./steam-powerbuttond-chimeraos.service /etc/systemd/system/
 
 sudo systemctl daemon-reload
-sudo systemctl enable steam-powerbuttond-chimeraos
-sudo systemctl start steam-powerbuttond-chimeraos
+sudo systemctl enable --now steam-powerbuttond-chimeraos
 
 echo "Install Complete"

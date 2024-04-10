@@ -14,8 +14,7 @@ cp ./steam-powerbuttond $HOME/.local/bin
 # handle for SE linux
 sudo chcon -u system_u -r object_r --type=bin_t /var/home/$USER/.local/bin/steam-powerbuttond
 
-sudo systemctl disable steam-powerbuttond-bazzite
-sudo systemctl stop steam-powerbuttond-bazzite
+sudo systemctl disable --now steam-powerbuttond-bazzite
 
 # cannot directly cat into /etc/systemd/system/ (probably due to se linux)
 cat << EOF >> "./steam-powerbuttond-bazzite.service"
@@ -38,7 +37,6 @@ EOF
 sudo cp ./steam-powerbuttond-bazzite.service /etc/systemd/system/
 
 sudo systemctl daemon-reload
-sudo systemctl enable steam-powerbuttond-bazzite
-sudo systemctl start steam-powerbuttond-bazzite
+sudo systemctl enable --now steam-powerbuttond-bazzite
 
 echo "Install Complete"
