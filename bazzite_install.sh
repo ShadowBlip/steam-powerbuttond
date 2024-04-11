@@ -20,7 +20,7 @@ sudo systemctl disable --now steam-powerbuttond-bazzite
 cat << EOF >> "./steam-powerbuttond-bazzite.service"
 [Unit]
 Description=steam powerbuttond bazzite local service
-RequiresMountFor=/var/home/$USER
+After=graphical-session.target
 
 [Service]
 Type=simple
