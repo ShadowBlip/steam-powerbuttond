@@ -27,7 +27,7 @@ def main():
     global loop
     global running
 
-    print("steam-powerputtond: Starting")
+    print("steam-powerbuttond: Starting")
 
     __init__()
     get_user()
@@ -63,7 +63,7 @@ def main():
 
 
 def __init__():
-    print("steam-powerputtond: Searching for devices")
+    print("steam-powerbuttond: Searching for devices")
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
     for device in devices:
@@ -113,7 +113,7 @@ async def monitor_device(device):
     global press_type
     global running
 
-    print(f"steam-powerputtond: Starting to monitor device: {device.name}")
+    print(f"steam-powerbuttond: Starting to monitor device: {device.name}")
 
     while running:
         async for event in device.async_read_loop():
@@ -167,9 +167,9 @@ def is_game_mode():
     # Use this and line to determine if Steam is running in DeckUI mode.
     is_deck_ui = b"-gamepadui" in steam_cmd
     if not is_deck_ui:
-        print("steam-powerbuttond: Game mode not edetected.")
+        print("steam-powerbuttond: Game mode not detected.")
         return False
-    print("steam-powerbuttond: Game mode was edetected.")
+    print("steam-powerbuttond: Game mode was detected.")
     return True
 
 
