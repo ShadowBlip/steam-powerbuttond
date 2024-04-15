@@ -34,7 +34,7 @@ ExecStart=/var/home/$USER/.local/bin/steam-powerbuttond
 WantedBy=default.target
 EOF
 
-sudo cp ./steam-powerbuttond-bazzite.service /etc/systemd/system/
+sudo mv ./steam-powerbuttond-bazzite.service /etc/systemd/system/
 
 sudo systemctl daemon-reload
 sudo systemctl enable --now steam-powerbuttond-bazzite
