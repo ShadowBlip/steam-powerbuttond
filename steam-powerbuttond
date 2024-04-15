@@ -3,13 +3,14 @@
 # created based on implementation from HandyGCCS https://github.com/ShadowBlip/HandyGCCS/blob/10bf0da2bbe06b4e6c608e157f26628b6d848042/src/handycon/utilities.py#L351
 
 import asyncio
+import evdev
 import os
 import signal
 import subprocess
 import sys
-from time import sleep
+import threading
 
-import evdev
+from time import sleep
 
 POWER_BUTTONS = ["LNXPWRBN/button/input0", "PNP0C0C/button/input0"]
 KEYBOARDS = ["AT Translated Set 2 keyboard", "InputPlumber Keyboard"]
@@ -18,11 +19,13 @@ monitored_devices = []
 
 user = ""
 home_path = ""
+longpresstimer = None
 loop = None
 press_type = None
 running = False
 
 
+# Main daemon loop. Runs init functions and starts the run loop.
 def main():
     global loop
     global running
@@ -62,6 +65,7 @@ def main():
             sys.exit(exit_code)
 
 
+# Identifies system hardware to monitor.
 def __init__():
     print("steam-powerbuttond: Searching for devices")
 
@@ -86,6 +90,8 @@ def __init__():
     print(f"steam-powerputtond: Found devices: {monitored_devices}")
 
 
+# Gets the current (first) user so we can send steam a command from the
+# users home directory.
 def get_user():
     global user
     global home_path
@@ -109,7 +115,11 @@ def get_user():
     print(f"steam-powerbuttond: Found user: {user}")
 
 
+# Checks monitored devices for output events. Power buttons provide KEY_POWER
+# events and some keyboards produce KEY_LEFTMETA when power is held for more
+# than 1 second.
 async def monitor_device(device):
+    global longpresstimer
     global press_type
     global running
 
@@ -117,17 +127,29 @@ async def monitor_device(device):
 
     while running:
         async for event in device.async_read_loop():
-            # KEY_POWER
-            if event.type == evdev.ecodes.EV_KEY and event.code == 116:
+            # Power Buttons
+            if (
+                event.type == evdev.ecodes.EV_KEY
+                and event.code == evdev.ecodes.KEY_POWER
+            ):
                 if event.value >= 1:
                     print("Detected power event, short press action queued")
                     if not press_type:
                         press_type = "short"
+                    longpresstimer = threading.Timer(1.0, longpress_deck)
+                    longpresstimer.start()
+
                 else:
+                    if longpresstimer is not None:
+                        longpresstimer.cancel()
+                        longpresstimer = None
                     if press_type:
                         press()
-            # KEY_LEFTMETA
-            if event.type == evdev.ecodes.EV_KEY and event.code == 125:
+            # Keyboard Devices
+            if (
+                event.type == evdev.ecodes.EV_KEY
+                and event.code == evdev.ecodes.KEY_LEFTMETA
+            ):
                 if event.value >= 1:
                     print("Detected left meta, long press action queued.")
                     press_type = "long"
@@ -138,6 +160,21 @@ async def monitor_device(device):
         print("steam-powerbuttond: Can't find device for power button!")
 
 
+# The Steam deck (and perhaps a few other devices) dont use the
+# KEY_LEFTMETA method with an on-release type power button, instead
+# they have a momentary power button that emits a 1 when pressed
+# and a 0 when released. This timer callback supports that method.
+def longpress_deck():
+    global longpresstimer
+    global press_type
+
+    longpresstimer = None
+    press_type = "long"
+    press()
+
+
+# Determines if steam is running in game mode or not, used to
+# support legacy modes of suspend in desktop or other sessions.
 def is_game_mode():
     global home_path
     # Get the currently running Steam PID.
@@ -173,6 +210,7 @@ def is_game_mode():
     return True
 
 
+# Runs the given steam command as determined by long/short press logic.
 def run_steam_command(command):
     global home_path
     global user
@@ -189,6 +227,7 @@ def run_steam_command(command):
         return False
 
 
+# Determines which suspend/shutdown method to use based on long/short press.
 def press():
     global press_type
     print(f"steam-powerbuttond: Detected {press_type} press.")
@@ -230,7 +269,8 @@ async def exit():
             await task
         except asyncio.CancelledError:
             print(f"Failed to stop task {task}")
-    loop.stop()
+    if loop is not None:
+        loop.stop()
 
 
 if __name__ == "__main__":
