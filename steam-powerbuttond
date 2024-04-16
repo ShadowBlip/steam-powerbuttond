@@ -136,8 +136,8 @@ async def monitor_device(device):
                     print("Detected power event, short press action queued")
                     if not press_type:
                         press_type = "short"
-                    longpresstimer = threading.Timer(1.0, longpress_deck)
-                    longpresstimer.start()
+                        longpresstimer = threading.Timer(1.0, longpress_deck)
+                        longpresstimer.start()
 
                 else:
                     if longpresstimer is not None:
