@@ -1,3 +1,5 @@
+# DEPRECATED, use official steamos-powerbuttond instead https://gitlab.steamos.cloud/holo/powerbuttond
+
 # steam-powerbuttond
 Simple powerbutton daemon for steam with gamescope-session
 
