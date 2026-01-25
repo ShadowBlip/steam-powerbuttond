@@ -23,6 +23,7 @@ longpresstimer = None
 loop = None
 press_type = None
 running = False
+double_power_button_mode = False
 
 
 # Main daemon loop. Runs init functions and starts the run loop.
@@ -70,6 +71,7 @@ def __init__():
     print("steam-powerbuttond: Searching for devices")
 
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    power_buttons_num = 0
     for device in devices:
         # Grab power buttons devices to prevent the events from propegating to
         # the system.
@@ -77,6 +79,7 @@ def __init__():
             monitored_devices.append(device)
             device.grab()
             print(f"steam-powerbuttond: Found device: {device.name}")
+            power_buttons_num += 1
         # Don't grab keyboards, they should be allowed to send events to the
         # system. We just want to look for the LEFTMETA they send after a few
         # moments of holding the power button.
@@ -88,6 +91,10 @@ def __init__():
             device.close()
 
     print(f"steam-powerputtond: Found devices: {monitored_devices}")
+    if power_buttons_num == 2:
+        global double_power_button_mode
+        double_power_button_mode = True
+        print("steam-powerputtond: Double power button mode")
 
 
 # Gets the current (first) user so we can send steam a command from the
@@ -133,13 +140,21 @@ async def monitor_device(device):
                 and event.code == evdev.ecodes.KEY_POWER
             ):
                 if event.value >= 1:
-                    print("Detected power event, short press action queued")
                     if not press_type:
+                        print("Detected power event, short press action queued")
                         press_type = "short"
                         longpresstimer = threading.Timer(1.0, longpress_deck)
                         longpresstimer.start()
+                    elif double_power_button_mode:
+                        if press_type == "short":
+                            if longpresstimer is not None:
+                                longpresstimer.cancel()
+                                longpresstimer = None
+                            press()
+                        elif press_type == "long":
+                            press_type = None
 
-                else:
+                elif not double_power_button_mode:
                     if longpresstimer is not None:
                         longpresstimer.cancel()
                         longpresstimer = None
@@ -241,7 +256,9 @@ def press():
             run_steam_command("steam://shortpowerpress")
         else:
             os.system("systemctl suspend")
-    press_type = None
+    if not double_power_button_mode:
+        # for double power button, it should be cleaned by the second trigger
+        press_type = None
 
 
 # Gracefull shutdown.
